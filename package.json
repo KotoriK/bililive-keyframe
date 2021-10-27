@@ -1,0 +1,23 @@
+{
+  "name": "bililive-keyframe",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^16.11.6",
+    "beamcoder": "^0.6.14",
+    "bilibili-api": "github:KotoriK/bilibili-api-js",
+    "m3u8-parser": "^4.7.0",
+    "node-fetch": "^2.6.5",
+    "typescript": "^4.4.4"
+  },
+  "devDependencies": {
+    "@types/node-fetch": "^3.0.3"
+  }
+}
