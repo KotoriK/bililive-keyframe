@@ -4,6 +4,9 @@ import { APIResponse, getPlayUrl, GetPlayUrl_Data, GetPlayUrl_Option } from 'bil
 import { pipeline } from "stream/promises";
 import { demuxerStream, decoder as Decoder, encoder as Encoder } from 'beamcoder'
 
+import got from 'got'
+import { Readable } from "stream";
+
 async function getSegments(url: string) {
     const segments: Array<SegmentsWithReferer> = []
     const { origin } = new URL(url)
@@ -21,13 +24,19 @@ async function getSegments(url: string) {
 }
 async function tryGetKeyframeFromSegment(segement: Segment, base: string) {
     try {
-        const resp = await fetch(new URL(segement.uri, base).toString(), { headers: { referer: base } })
+        const url = new URL(segement.uri, base).toString()
+        console.log('try to get segement from: ' + url)
         const stream = demuxerStream({ highwaterMark: 65536 });
-        await pipeline(resp.body, stream)
-        const demuxer = await stream.demuxer(null)
+        const resp = await got(url, { headers: { referer: base }, responseType: 'buffer' })
+        //const gotStream = got.stream(url, { headers: { referer: base } })
+        resp.on('downloadProgress', (progress) => { console.log(progress) })
+        await pipeline(Readable.from(resp.body), stream)
+        console.log('read complete: ' + url)
+        const demuxer = await stream.demuxer({})
+        await demuxer.seek({ time: 0 });
         let packet = await demuxer.read(); // Find the next video packet (assumes stream 0)
         for (; packet.stream_index !== 0; packet = await demuxer.read());
-        const decoder = Decoder({ demuxer, params: null })
+        const decoder = Decoder({ demuxer, stream_index: 0 })
         let decResult = await decoder.decode(packet); // Decode the frame
         if (decResult.frames.length === 0) // Frame may be buffered, so flush it out
             decResult = await decoder.flush();
@@ -48,14 +57,14 @@ async function tryGetKeyframeFromSegment(segement: Segment, base: string) {
 }
 export async function getKeyframeByRoomId(opt: GetPlayUrl_Option) {
     const { url, options } = getPlayUrl(opt)
-    const { data: respData }: APIResponse<GetPlayUrl_Data> = await (await fetch(url, { headers: { ...options.headers as any } })).json()
+    const { data: respData }: APIResponse<GetPlayUrl_Data> = JSON.parse((await got(url, { headers: { ...options.headers as any } })).body)
     const streamUrls = respData.durl.map(item => item.url)
     for (const streamUrl of streamUrls) {
         const segmentsWithReferer = await getSegments(streamUrl)
         if (segmentsWithReferer.length == 0) continue
         for (const { segments, base } of segmentsWithReferer) {
             for (const segment of segments) {
-                const result = tryGetKeyframeFromSegment(segment, base)
+                const result = await tryGetKeyframeFromSegment(segment, base)
                 if (result) {
                     return result
                 }
@@ -64,4 +73,3 @@ export async function getKeyframeByRoomId(opt: GetPlayUrl_Option) {
     }
     console.warn('所有源都获取失败')
 }
-getKeyframeByRoomId('https://d1--cn-gotcha103.bilivideo.com/live-bvc/100605/live_50333369_2753084_4000.m3u8?cdn=cn-gotcha03&expires=1635262112&len=0&oi=456067133&pt=h5&qn=400&trid=100317861197d87245dfb62c18f5e27f1b6a&sigparams=cdn,expires,len,oi,pt,qn,trid&sign=e492072bbafbbf11490c37b7d96db73d&ptype=0&src=5&sl=1&sk=2935686d6cb9146c7a6a6a0b4e120e2594e074fa0760377f1a7a2b2fa0ee6443&order=1')

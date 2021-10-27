@@ -1,7 +1,7 @@
+import got from 'got';
 import { Parser } from 'm3u8-parser'
 
 import { M3U8, PlayList, Segment } from './d';
-import fetch from 'node-fetch'
 
 export function parseM3u8(body: string): M3U8 {
     const parser = new Parser();
@@ -12,8 +12,8 @@ export function parseM3u8(body: string): M3U8 {
     return parser.manifest
 }
 export async function fetchM3U8(url: string, referer?: string) {
-    const resp = await fetch(url, { headers: { referrer: referer || url } })
-    const txt = await resp.text()
+    const resp = await got(url, { headers: { referer: referer || url } })
+    const txt =  resp.body
     return parseM3u8(txt)
 }
 export function fetchPlayLists(playlists: Array<PlayList>, referer?: string) {
