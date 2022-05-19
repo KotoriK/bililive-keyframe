@@ -1,4 +1,4 @@
-import { fetchM3U8, fetchPlayLists } from "./main";
+import { fetchM3U8, fetchPlayLists } from "./fetch";
 import { getPlayUrl } from 'bilibili-api';
 import { pipeline } from "stream/promises";
 import { demuxerStream, decoder as Decoder, encoder as Encoder } from 'beamcoder';

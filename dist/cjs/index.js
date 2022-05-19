@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getKeyframeByRoomId = void 0;
-const main_1 = require("./main");
+const fetch_1 = require("./fetch");
 const bilibili_api_1 = require("bilibili-api");
 const promises_1 = require("stream/promises");
 const beamcoder_1 = require("beamcoder");
@@ -13,9 +13,9 @@ const stream_1 = require("stream");
 async function getSegments(url) {
     const segments = [];
     const { origin } = new URL(url);
-    const manifest = await (0, main_1.fetchM3U8)(url, origin);
+    const manifest = await (0, fetch_1.fetchM3U8)(url, origin);
     if (manifest.playlists?.length > 0) {
-        segments.push(...(await (0, main_1.fetchPlayLists)(manifest.playlists, origin)).flat());
+        segments.push(...(await (0, fetch_1.fetchPlayLists)(manifest.playlists, origin)).flat());
     }
     if (manifest.segments?.length > 0) {
         segments.push({

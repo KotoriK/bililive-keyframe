@@ -20,20 +20,16 @@ async function fetchM3U8(url, referer) {
 }
 exports.fetchM3U8 = fetchM3U8;
 function fetchPlayLists(playlists, referer) {
-    return Promise.all(playlists.map(async (playlist) => {
-        return {
-            segments: (await fetchM3U8(playlist.uri, referer)).segments,
-            base: new URL(playlist.uri).origin
-        };
-    }));
+    return Promise.all(playlists.map(async (playlist) => ({
+        segments: (await fetchM3U8(playlist.uri, referer)).segments,
+        base: new URL(playlist.uri).origin
+    })));
 }
 exports.fetchPlayLists = fetchPlayLists;
 function parseSegements(segements, basePath) {
-    return segements.map(({ uri, ...others }) => {
-        return {
-            uri: uri.startsWith('http') ? uri : new URL(uri, basePath).toString(),
-            ...others
-        };
-    });
+    return segements.map(({ uri, ...others }) => ({
+        uri: uri.startsWith('http') ? uri : new URL(uri, basePath).toString(),
+        ...others
+    }));
 }
 exports.parseSegements = parseSegements;
