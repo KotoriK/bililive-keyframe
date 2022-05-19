@@ -1,5 +1,5 @@
 import { Segment, SegmentsWithReferer } from "./d";
-import { fetchM3U8, fetchPlayLists } from "./main";
+import { fetchM3U8, fetchPlayLists } from "./fetch";
 import { APIResponse, getPlayUrl, GetPlayUrl_Data, GetPlayUrl_Option } from 'bilibili-api'
 import { pipeline } from "stream/promises";
 import { demuxerStream, decoder as Decoder, encoder as Encoder } from 'beamcoder'
